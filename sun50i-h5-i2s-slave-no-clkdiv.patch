@@ -1,0 +1,91 @@
+diff --git a/arch/arm64/boot/dts/allwinner/overlay/Makefile b/arch/arm64/boot/dts/allwinner/overlay/Makefile
+index 27e04c31c..03617522f 100644
+--- a/arch/arm64/boot/dts/allwinner/overlay/Makefile
++++ b/arch/arm64/boot/dts/allwinner/overlay/Makefile
+@@ -18,6 +18,7 @@ dtbo-$(CONFIG_ARCH_SUNXI) += \
+ 	sun50i-h5-i2c0.dtbo \
+ 	sun50i-h5-i2c1.dtbo \
+ 	sun50i-h5-i2c2.dtbo \
++	sun50i-h5-i2s-slave.dtbo \
+ 	sun50i-h5-pps-gpio.dtbo \
+ 	sun50i-h5-pwm.dtbo \
+ 	sun50i-h5-spdif-out.dtbo \
+diff --git a/arch/arm64/boot/dts/allwinner/overlay/README.sun50i-h5-overlays b/arch/arm64/boot/dts/allwinner/overlay/README.sun50i-h5-overlays
+index 1b09248c7..8874052e8 100644
+--- a/arch/arm64/boot/dts/allwinner/overlay/README.sun50i-h5-overlays
++++ b/arch/arm64/boot/dts/allwinner/overlay/README.sun50i-h5-overlays
+@@ -20,6 +20,7 @@ adding fixed software (GPIO) chip selects is possible with a separate overlay
+ - i2c0
+ - i2c1
+ - i2c2
++- i2s-slave
+ - pps-gpio
+ - pwm
+ - spdif-out
+@@ -238,6 +239,10 @@ Activates USB host controller 2
+ 
+ Activates USB host controller 3
+ 
++### i2s-slave
++
++Activates i2s slave mode
++
+ ### w1-gpio
+ 
+ Activates 1-Wire GPIO master
+diff --git a/arch/arm64/boot/dts/allwinner/overlay/sun50i-h5-i2s-slave.dts b/arch/arm64/boot/dts/allwinner/overlay/sun50i-h5-i2s-slave.dts
+new file mode 100644
+index 000000000..ef7688cb8
+--- /dev/null
++++ b/arch/arm64/boot/dts/allwinner/overlay/sun50i-h5-i2s-slave.dts
+@@ -0,0 +1,50 @@
++/dts-v1/;
++/plugin/;
++
++/ {
++	compatible = "allwinner,sun50i-h5";
++
++ 	fragment@0 { 
++ 		target-path = "/"; 
++ 		__overlay__ { 
++			pcm5102a: pcm5102a {
++				#sound-dai-cells = <0>;
++				compatible = "ti,pcm5102a";
++				pcm510x,format = "i2s";
++			};
++ 		}; 
++ 	}; 
++
++	fragment@1 {
++		target = <&i2s0>;
++		__overlay__ {
++			status = "okay";
++			pinctrl-0 = <&i2s0_pins>;
++			sound-dai = <&pcm5102a>;
++			pinctrl-names = "default";
++		};
++	};
++
++	fragment@2 {
++		target-path = "/";
++		__overlay__ {
++			sound_i2s {
++				compatible = "simple-audio-card";
++				simple-audio-card,name = "I2S-slave";
++				simple-audio-card,mclk-fs = <128>;
++				simple-audio-card,format = "i2s";
++				simple-audio-card,bitclock-master = <&codec_dai>;
++				simple-audio-card,frame-master = <&codec_dai>;
++		                status = "okay";
++
++				simple-audio-card,cpu {
++					sound-dai = <&i2s0>;
++				};
++
++				codec_dai: simple-audio-card,codec {
++					sound-dai = <&pcm5102a>;
++				};
++			};
++		};
++	};
++};

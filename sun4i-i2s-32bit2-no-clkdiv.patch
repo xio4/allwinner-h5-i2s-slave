@@ -1,0 +1,21 @@
+diff --git a/sound/soc/sunxi/sun4i-i2s.c b/sound/soc/sunxi/sun4i-i2s.c
+index 82e752813..14bbebb92 100644
+--- a/sound/soc/sunxi/sun4i-i2s.c
++++ b/sound/soc/sunxi/sun4i-i2s.c
+@@ -1056,6 +1056,7 @@ static int sun4i_i2s_init_regmap_fields(struct device *dev,
+ static int sun4i_i2s_probe(struct platform_device *pdev)
+ {
+ 	struct sun4i_i2s *i2s;
++	struct snd_soc_dai_driver *soc_dai;
+ 	struct resource *res;
+ 	void __iomem *regs;
+ 	int irq, ret;
+@@ -1146,7 +1147,7 @@ static int sun4i_i2s_probe(struct platform_device *pdev)
+ 
+ 	ret = devm_snd_soc_register_component(&pdev->dev,
+ 					      &sun4i_i2s_component,
+-					      &sun4i_i2s_dai, 1);
++					      soc_dai, 1);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Could not register DAI\n");
+ 		goto err_suspend;
